@@ -118,8 +118,9 @@ const AdminItemRow: React.FC<AdminItemRowProps> = ({
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-          alert("File is too large. Please select an image under 2MB.");
+      // Increased limit to 10MB since we are now using IndexedDB
+      if (file.size > 10 * 1024 * 1024) {
+          alert("File is too large. Please select an image under 10MB.");
           return;
       }
       
@@ -136,8 +137,8 @@ const AdminItemRow: React.FC<AdminItemRowProps> = ({
   const handleSubItemImageUpload = (subId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-          alert("File is too large. Please select an image under 2MB.");
+      if (file.size > 10 * 1024 * 1024) {
+          alert("File is too large. Please select an image under 10MB.");
           return;
       }
       
