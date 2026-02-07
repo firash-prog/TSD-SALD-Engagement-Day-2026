@@ -4,6 +4,50 @@ import { ItemData, SubItem } from '../types';
 import { Link } from 'react-router-dom';
 import { Save, Upload, ArrowLeft, Unlock, RefreshCcw, Image as ImageIcon } from 'lucide-react';
 
+// Helper to compress images before storage to avoid quota limits
+const processImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1000;
+        const MAX_HEIGHT = 1000;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            // Compress to JPEG 0.7 to ensure it fits in localStorage
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+        } else {
+            reject(new Error("Canvas context not available"));
+        }
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
+
 export const Admin: React.FC = () => {
   const { items, updateItem, resetToDefaults } = useData();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -115,42 +159,35 @@ const AdminItemRow: React.FC<AdminItemRowProps> = ({
     setStatus('idle');
   }, [item]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Increased limit to 10MB since we are now using IndexedDB
-      if (file.size > 10 * 1024 * 1024) {
-          alert("File is too large. Please select an image under 10MB.");
-          return;
-      }
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
+      try {
+        const processed = await processImage(file);
+        setImage(processed);
         setIsDirty(true);
         setStatus('idle');
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.error("Image processing error:", err);
+        alert("Failed to process image. Please try another file.");
+      }
     }
   };
 
-  const handleSubItemImageUpload = (subId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSubItemImageUpload = async (subId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-          alert("File is too large. Please select an image under 10MB.");
-          return;
-      }
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
+      try {
+        const processed = await processImage(file);
         setSubItems(prev => prev.map(sub => 
-            sub.id === subId ? { ...sub, image: reader.result as string } : sub
+            sub.id === subId ? { ...sub, image: processed } : sub
         ));
         setIsDirty(true);
         setStatus('idle');
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.error("Image processing error:", err);
+        alert("Failed to process image. Please try another file.");
+      }
     }
   };
 
