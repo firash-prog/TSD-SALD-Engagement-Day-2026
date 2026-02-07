@@ -13,8 +13,9 @@ export const Hero: React.FC = () => {
     const handleScroll = () => {
       if (parallaxRef.current) {
         const scrolled = window.scrollY;
+        // Adjusted for smoother parallax that keeps video well-positioned
         if (scrolled < window.innerHeight * 1.5) {
-           parallaxRef.current.style.transform = `translate3d(0, ${scrolled * 0.3}px, 0)`;
+           parallaxRef.current.style.transform = `translate3d(0, ${scrolled * 0.4}px, 0)`;
         }
       }
     };
@@ -82,17 +83,20 @@ export const Hero: React.FC = () => {
           loop
           muted
           playsInline
-          poster="https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1920&q=80"
+          poster="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=1920&q=80"
           onLoadedData={() => setIsVideoLoaded(true)}
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[1500ms] ease-out ${isVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
         >
-          {/* Sand Ripples / Oasis Vibe Video */}
-          <source src="https://cdn.coverr.co/videos/coverr-ripples-in-the-sand-1627/1080p.mp4" type="video/mp4" />
+          {/* Desert Tent Camp Aesthetic Video */}
+          <source src="https://videos.pexels.com/video-files/3205808/3205808-hd_1920_1080_25fps.mp4" type="video/mp4" />
         </video>
+        
+        {/* Subtle overlay to ensure text legibility without hiding the video */}
+        <div className="absolute inset-0 bg-black/10" />
       </div>
 
       {/* Gradient fade at the bottom to blend seamlessly with the content section */}
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-oasis-sand to-transparent z-[1] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-oasis-sand via-oasis-sand/60 to-transparent z-[1] pointer-events-none" />
 
       {/* Audio Control Only */}
       <div className="absolute bottom-8 right-6 z-20 flex flex-col gap-3 animate-fade-in-up" style={{ animationDelay: '1.2s' }}>
@@ -134,7 +138,7 @@ export const Hero: React.FC = () => {
           The Collective Oasis
         </h2>
         
-        <p className="max-w-2xl mx-auto text-xl text-oasis-blue/90 mt-8 leading-relaxed font-light">
+        <p className="max-w-2xl mx-auto text-xl text-oasis-blue/90 mt-8 leading-relaxed font-light drop-shadow-sm">
           A sanctuary of connection and celebration. Experience a vibrant serenity designed to refresh the spirit and strengthen bonds.
         </p>
       </div>
